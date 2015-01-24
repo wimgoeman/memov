@@ -7,6 +7,7 @@ import shutil
 class MemovMock(Memov):
     def __init__(self):
         config.MOVIE_DIR = "/movies/"
+        config.MUSIC_DIR = "/music/"
         config.TV_SHOW_DIR = "/shows/"
         config.EXTENSIONS = ["avi", "mp4", "iso", "mkv", "m4v", "sub", "srt"]
         config.MOVIE_INDICATORS = ["dvdrip", "dvd-rip", "xvid", "divx", "h264", "x264", "720p", "RARBG"]
@@ -87,6 +88,14 @@ class MemovTest(unittest.TestCase):
     def testMovieCrappyName(self):
         self.memov_mock.move("/Downloads/", "RARBG.com.avi")
         self.assertEqual(self.memov_mock.new_file, "/movies/RARBG.com.avi")
+                
+    def testMusicDashedFile(self):
+        self.memov_mock.move("/Downloads/", "01 - An Awesome Song.mp3")
+        self.assertEqual(self.memov_mock.new_file, "/music/01 - An Awesome Song.mp3")
+
+    def testMusicDottedFile(self):
+        self.memov_mock.move("/Downloads/", "This.is.dotted.flac")
+        self.assertEqual(self.memov_mock.new_file, "/music/This.is.dotted.flac")
                 
     def testConfigList(self):
         config = ["a", "b", "c"]

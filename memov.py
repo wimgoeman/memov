@@ -23,10 +23,12 @@ def get_config(variable, isCritical=False):
 class Memov:
     def __init__(self):
         extensions = self._createConfigList(get_config('EXTENSIONS', True))
+        music_extensions = self._createConfigList(get_config('MUSIC_EXTENSIONS', True))
         movie_indicators = self._createConfigList(get_config('MOVIE_INDICATORS', True))
         ignore_files = self._createConfigList(get_config('IGNORE_FILES'))
         self.tv_pattern = re.compile("([-._ \w]+)[-._ ]S(\d{1,2}).?Ep?(\d{1,2})([^\/]*\.(?:" + extensions + ")$)", re.IGNORECASE)
         self.movie_pattern = re.compile("(?:" + movie_indicators + ")(.*)\.(?:" + extensions + ")$", re.IGNORECASE)
+        self.music_pattern = re.compile("(.*)\.(?:" + music_extensions + ")$", re.IGNORECASE)
         self.fileMoved = False
 
     def isMovie(self, filename):
@@ -35,6 +37,10 @@ class Memov:
 
     def isTvShow(self, filename):
         result = self.tv_pattern.search(filename)
+        return result
+
+    def isMusic(self, filename):
+        result = self.music_pattern.search(filename)
         return result
 
     def cleanUpTvShowFilename(self, matched_filename):
@@ -64,7 +70,10 @@ class Memov:
         elif self.isMovie(file_name):
             full_path = os.path.join(get_config('MOVIE_DIR', True), file_name)
             self.moveFile(orig_file, full_path)
-
+        elif self.isMusic(file_name):
+            full_path = os.path.join(get_config('MUSIC_DIR', True), file_name)
+            self.moveFile(orig_file, full_path)
+            
     def moveTvShow(self, orig_file, tv_show_dir, tv_show_title):
         directory = os.path.join(get_config('TV_SHOW_DIR', True), tv_show_dir[0], tv_show_dir[1])
         self.createTvShowDir(directory)
