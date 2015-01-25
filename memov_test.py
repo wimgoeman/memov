@@ -13,14 +13,22 @@ class MemovMock(Memov):
         config.MOVIE_INDICATORS = ["dvdrip", "dvd-rip", "xvid", "divx", "h264", "x264", "720p", "RARBG"]
         Memov.__init__(self)
         self.orig_file = ""
-        self.new_file = ""     
+        self.new_file = ""  
+        self.album = None   
+        self.artist = None
 
-    def createTvShowDir(self, tv_show_dir):
+    def createDir(self, tv_show_dir):
         pass
         
     def moveFile(self, orig_file, new_file):
         self.orig_file = orig_file
         self.new_file = new_file 
+
+    def get_mp3_info(self, file):
+        return self.artist, self.album
+
+    def get_flac_info(self, file):
+        return self.artist, self.album
         
 class MemovFilesActivatedMock(Memov):
     def __init__(self):
@@ -91,12 +99,24 @@ class MemovTest(unittest.TestCase):
                 
     def testMusicDashedFile(self):
         self.memov_mock.move("/Downloads/", "01 - An Awesome Song.mp3")
-        self.assertEqual(self.memov_mock.new_file, "/music/01 - An Awesome Song.mp3")
+        self.assertEqual(self.memov_mock.new_file, "/music/Unknown artist/01 - An Awesome Song.mp3")
 
-    def testMusicDottedFile(self):
-        self.memov_mock.move("/Downloads/", "This.is.dotted.flac")
-        self.assertEqual(self.memov_mock.new_file, "/music/This.is.dotted.flac")
+    def testMusicDottedFileWithArtist(self):
+        self.memov_mock.artist = "Queen"
+        self.memov_mock.move("/Downloads/", "Bohemian.Rhapsody.flac")
+        self.assertEqual(self.memov_mock.new_file, "/music/Queen/Unknown album/Bohemian.Rhapsody.flac")
                 
+    def testMusicWithArtistAndAlbum(self):
+        self.memov_mock.artist = "Queen"
+        self.memov_mock.album = "Greatest Hits"
+        self.memov_mock.move("/Downloads/", "Bohemian.Rhapsody.flac")
+        self.assertEqual(self.memov_mock.new_file, "/music/Queen/Greatest Hits/Bohemian.Rhapsody.flac")
+    
+    def testMusicWithAlbumOnly(self):
+        self.memov_mock.album = "Greatest Hits"
+        self.memov_mock.move("/Downloads/", "Bohemian.Rhapsody.flac")
+        self.assertEqual(self.memov_mock.new_file, "/music/Unknown artist/Bohemian.Rhapsody.flac")
+
     def testConfigList(self):
         config = ["a", "b", "c"]
         result = self.memov_mock._createConfigList(config)
