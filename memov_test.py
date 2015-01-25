@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import unittest
 from memov import Memov, get_config
 import config

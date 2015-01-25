@@ -14,9 +14,9 @@ try:
     imp.find_module('mutagen')
     from mutagen.easyid3 import EasyID3
     from mutagen.flac import FLAC
-    music_support = True
+    _music_support = True
 except ImportError:
-    music_support = False
+    _music_support = False
 
 def get_config(variable, isCritical=False):
     if hasattr(config, variable):
@@ -29,7 +29,7 @@ def get_config(variable, isCritical=False):
             sys.exit(1)
 
 class Memov:
-    def __init__(self):
+    def __init__(self, music_support = True):
         extensions = self._createConfigList(get_config('EXTENSIONS', True))
         music_extensions = self._createConfigList(get_config('MUSIC_EXTENSIONS', True))
         movie_indicators = self._createConfigList(get_config('MOVIE_INDICATORS', True))
@@ -38,6 +38,7 @@ class Memov:
         self.movie_pattern = re.compile("(?:" + movie_indicators + ")(.*)\.(?:" + extensions + ")$", re.IGNORECASE)
         self.music_pattern = re.compile("([-._ \w\(\)\[\]]+)\.(" + music_extensions + ")$", re.IGNORECASE)
         self.fileMoved = False
+        self.music_support = music_support
 
     def isMovie(self, filename):
         result = self.movie_pattern.search(filename)
@@ -109,7 +110,7 @@ class Memov:
         elif self.isMovie(file_name):
             full_path = os.path.join(get_config('MOVIE_DIR', True), file_name)
             self.moveFile(orig_file, full_path)
-        elif music_support:
+        elif self.music_support:
             music_match = self.isMusic(file_name)
             if music_match:
                 artist_album_dir = self.extractMusicDir(orig_file, music_match.groups()[1])
@@ -168,7 +169,7 @@ class Memov:
 
 if __name__ == '__main__':
     download_dir = get_config('DOWNLOAD_DIR', True)
-    if not music_support:
+    if not _music_support:
         print 'Mutagen dependency missing. MP3/FLAC files will be skipped'
 
-    Memov().run(download_dir)
+    Memov(_music_support).run(download_dir)
